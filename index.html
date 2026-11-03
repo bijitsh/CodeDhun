@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#050012" />
+<title>SoundWave — Liquid Glass Music</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop stop-color='%23a855f7'/><stop offset='1' stop-color='%2322d3ee'/></linearGradient></defs><circle cx='50' cy='50' r='44' fill='url(%23g)'/></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<style>
+  :root { --violet:#8b5cf6; --magenta:#e93df3; --cyan:#22d3ee; --pink:#ec4899; }
+  html { scroll-behavior:smooth; }
+  body {
+    font-family:'Outfit',sans-serif;
+    background:#050012;
+    color:#fff;
+    -webkit-tap-highlight-color:transparent;
+    overflow-x:hidden;
+  }
+  .font-display { font-family:'Space Grotesk',sans-serif; }
+  body.lock { overflow:hidden; }
+
+  /* ---------- Fluid ambient background ---------- */
+  .blob {
+    position:absolute; border-radius:50%; filter:blur(90px); will-change:transform;
+    mix-blend-mode:screen; pointer-events:none;
+  }
+  .blob-1 { width:65vmax; height:65vmax; left:-22vmax; top:-18vmax;
+    background:radial-gradient(circle at 35% 35%, rgba(124,58,237,.85), rgba(76,29,149,.35) 55%, transparent 72%);
+    animation:drift1 26s ease-in-out infinite alternate; }
+  .blob-2 { width:60vmax; height:60vmax; right:-25vmax; top:8%;
+    background:radial-gradient(circle at 40% 40%, rgba(34,211,238,.7), rgba(29,78,216,.35) 55%, transparent 72%);
+    animation:drift2 32s ease-in-out infinite alternate; }
+  .blob-3 { width:62vmax; height:62vmax; left:-20vmax; bottom:-25vmax;
+    background:radial-gradient(circle at 40% 40%, rgba(236,72,153,.75), rgba(162,28,175,.35) 55%, transparent 72%);
+    animation:drift3 29s ease-in-out infinite alternate; }
+  .blob-4 { width:44vmax; height:44vmax; right:-10vmax; bottom:-8vmax;
+    background:radial-gradient(circle at 40% 40%, rgba(168,85,247,.65), transparent 68%);
+    animation:drift1 38s ease-in-out infinite alternate-reverse; }
+  @keyframes drift1 {
+    0%{transform:translate(0,0) scale(1)} 33%{transform:translate(9vmax,5vmax) scale(1.12)}
+    66%{transform:translate(-4vmax,9vmax) scale(.94)} 100%{transform:translate(6vmax,-6vmax) scale(1.08)} }
+  @keyframes drift2 {
+    0%{transform:translate(0,0) scale(1) rotate(0)} 50%{transform:translate(-10vmax,7vmax) scale(1.15) rotate(40deg)}
+    100%{transform:translate(-5vmax,-8vmax) scale(.92) rotate(-20deg)} }
+  @keyframes drift3 {
+    0%{transform:translate(0,0) scale(1)} 40%{transform:translate(11vmax,-6vmax) scale(1.1)}
+    75%{transform:translate(3vmax,-11vmax) scale(1.02)} 100%{transform:translate(-6vmax,5vmax) scale(.9)} }
+  .noise {
+    position:fixed; inset:0; z-index:1; pointer-events:none; opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---------- Liquid glass ---------- */
+  .glass {
+    background:linear-gradient(135deg, rgba(255,255,255,.11), rgba(255,255,255,.045) 45%, rgba(255,255,255,.02));
+    -webkit-backdrop-filter:blur(25px) saturate(160%);
+    backdrop-filter:blur(25px) saturate(160%);
+    border:1px solid rgba(255,255,255,.18);
+    border-radius:24px;
+    box-shadow:0 12px 40px rgba(2,0,22,.5), inset 0 1px 0 rgba(255,255,255,.22), inset 0 -1px 0 rgba(255,255,255,.05);
+  }
+  .glass-soft {
+    background:rgba(255,255,255,.055);
+    -webkit-backdrop-filter:blur(25px) saturate(140%);
+    backdrop-filter:blur(25px) saturate(140%);
+    border:1px solid rgba(255,255,255,.14);
+    border-radius:24px;
+    box-shadow:0 8px 28px rgba(2,0,22,.35), inset 0 1px 0 rgba(255,255,255,.16);
+  }
+  .spec-line { position:relative; overflow:hidden; }
+  .spec-line::before {
+    content:''; position:absolute; top:0; left:8%; right:8%; height:1px;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent);
+  }
+
+  /* ---------- Glowing liquid ring (play button) ---------- */
+  .liquid-ring { position:relative; isolation:isolate; }
+  .liquid-ring::before {
+    content:''; position:absolute; inset:-7px; border-radius:9999px; z-index:-1;
+    background:conic-gradient(from 0deg, #f0abfc, #8b5cf6, #22d3ee, #ec4899, #f0abfc);
+    filter:blur(8px); opacity:.9; animation:ringspin 4.5s linear infinite;
+    transition:opacity .4s;
+  }
+  .liquid-ring::after {
+    content:''; position:absolute; inset:-7px; border-radius:9999px; z-index:-1;
+    background:conic-gradient(from 0deg, #f0abfc, #8b5cf6, #22d3ee, #ec4899, #f0abfc);
+    animation:ringspin 4.5s linear infinite reverse; opacity:.55;
+    mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    padding:1.5px; -webkit-mask-composite:xor; mask-composite:exclude;
+  }
+  body:not(.audio-playing) .liquid-ring::before { animation-play-state:paused; opacity:.35; }
+  body:not(.audio-playing) .liquid-ring::after { animation-play-state:paused; opacity:.3; }
+  @keyframes ringspin { to { transform:rotate(360deg); } }
+  @media (prefers-reduced-motion:reduce) { .blob, .liquid-ring::before, .liquid-ring::after, .eq span { animation:none !important; } }
+
+  /* ---------- Equalizer bars ---------- */
+  .eq { display:none; align-items:flex-end; gap:2.5px; height:14px; }
+  .eq.on { display:flex; }
+  .eq span { width:3px; border-radius:2px; background:linear-gradient(180deg,#f0abfc,#22d3ee);
+    animation:eqb 1s ease-in-out infinite; animation-play-state:paused; transform-origin:bottom; }
+  .eq span:nth-child(1){ animation-delay:0s; } .eq span:nth-child(2){ animation-delay:.25s; }
+  .eq span:nth-child(3){ animation-delay:.1s; } .eq span:nth-child(4){ animation-delay:.4s; }
+  body.audio-playing .eq.on span { animation-play-state:running; }
+  @keyframes eqb { 0%,100%{height:30%} 50%{height:100%} }
+
+  /* ---------- Big visualizer behind album art ---------- */
+  .viz span { width:5px; border-radius:3px;
+    background:linear-gradient(180deg, rgba(240,171,252,.9), rgba(139,92,246,.7), rgba(34,211,238,.45));
+    animation:vizb 1.15s ease-in-out infinite; animation-play-state:paused; transform-origin:bottom; opacity:.85; }
+  body.audio-playing .viz span { animation-play-state:running; }
+  @keyframes vizb { 0%,100%{height:18%} 50%{height:100%} }
+
+  /* ---------- Range inputs ---------- */
+  input[type=range] { -webkit-appearance:none; appearance:none; height:5px; border-radius:99px;
+    background:linear-gradient(90deg, var(--magenta), var(--cyan)) 0/var(--fill,80%) 100% no-repeat, rgba(255,255,255,.12);
+    outline:none; cursor:pointer; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px; border-radius:99px;
+    background:#fff; box-shadow:0 0 12px rgba(240,171,252,.9), 0 0 4px rgba(255,255,255,.8); transition:transform .2s; }
+  input[type=range]::-webkit-slider-thumb:hover { transform:scale(1.25); }
+  input[type=range]::-moz-range-thumb { width:14px; height:14px; border:none; border-radius:99px;
+    background:#fff; box-shadow:0 0 12px rgba(240,171,252,.9); }
+
+  /* ---------- Scrollbars ---------- */
+  .scroll-none::-webkit-scrollbar { display:none; }
+  .scroll-none { -ms-overflow-style:none; scrollbar-width:none; }
+
+  /* ---------- Hearts ---------- */
+  .liked svg { fill:#f472b6 !important; stroke:#f472b6 !important; filter:drop-shadow(0 0 6px rgba(244,114,182,.8)); }
+  @keyframes pop { 0%{transform:scale(1)} 45%{transform:scale(1.4)} 100%{transform:scale(1)} }
+  .pop { animation:pop .35s ease; }
+
+  /* ---------- Views / overlays ---------- */
+  .view { animation:fadeUp .55s cubic-bezier(.22,1,.36,1) both; }
+  @keyframes fadeUp { from{opacity:0; transform:translateY(18px)} to{opacity:1; transform:translateY(0)} }
+  #playerOverlay { visibility:hidden; opacity:0; transition:opacity .45s ease, visibility .45s; }
+  #playerOverlay.open { visibility:visible; opacity:1; }
+  #sheet { transform:translateY(104%); transition:transform .6s cubic-bezier(.22,1,.36,1); }
+  #playerOverlay.open #sheet { transform:translateY(0); }
+  .glow-art { filter:blur(46px) saturate(1.6); transform:scale(1.08); opacity:.75; animation:hue 14s linear infinite; }
+  @keyframes hue { 50%{ filter:blur(46px) saturate(2) hue-rotate(35deg); } }
+  .float-art { animation:floaty 6s ease-in-out infinite; }
+  @keyframes floaty { 0%,100%{transform:translateY(0) rotate(-.4deg)} 50%{transform:translateY(-9px) rotate(.4deg)} }
+
+  /* ---------- Misc ---------- */
+  .text-glow { text-shadow:0 0 24px rgba(217,70,239,.55), 0 0 60px rgba(139,92,246,.35); }
+  .grad-text { background:linear-gradient(92deg,#f0abfc 0%,#a78bfa 38%,#67e8f9 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .chip-active { background:linear-gradient(92deg,#a855f7,#ec4899) !important; color:#fff !important;
+    border-color:transparent !important; box-shadow:0 6px 20px rgba(217,70,239,.45); }
+  .nav-active .nav-ic { color:#f0abfc; filter:drop-shadow(0 0 10px rgba(240,171,252,.85)); }
+  .nav-active .nav-dot { opacity:1; transform:scale(1); }
+  .marquee-slow { overflow:hidden; }
+  .no-select { user-select:none; -webkit-user-select:none; }
+  #toast { transform:translate(-50%,16px); opacity:0; transition:all .4s cubic-bezier(.22,1,.36,1); pointer-events:none; }
+  #toast.show { transform:translate(-50%,0); opacity:1; }
+  #mini { transition:transform .5s cubic-bezier(.22,1,.36,1), opacity .5s; transform:translateY(150%); opacity:0; }
+  #mini.show { transform:translateY(0); opacity:1; }
+  ::selection { background:rgba(217,70,239,.4); }
+</style>
+</head>
+
+<body class="min-h-dvh">
+
+  <!-- ======== Ambient background ======== -->
+  <div class="fixed inset-0 z-0 overflow-hidden bg-[#050012]" aria-hidden="true">
+    <div class="absolute inset-0 bg-[radial-gradient(120%_90%_at_50%_0%,#1b0533_0%,#0a0220_45%,#050012_100%)]"></div>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+    <div class="blob blob-4"></div>
+  </div>
+  <div class="noise"></div>
+
+  <!-- ======== App shell ======== -->
+  <div id="app" class="relative z-10 mx-auto w-full max-w-[430px] lg:max-w-[460px]">
+
+    <!-- Header -->
+    <header class="sticky top-0 z-30 px-5 pt-5">
+      <div class="glass spec-line flex items-center justify-between rounded-2xl px-4 py-3">
+        <button data-tab="home" class="flex items-center gap-2.5 active:scale-95 transition-transform" aria-label="SoundWave home">
+          <span class="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-fuchsia-500 via-violet-600 to-cyan-400 shadow-[0_0_18px_rgba(168,85,247,.55)]">
+            <i data-lucide="audio-lines" class="size-5 text-white"></i>
+          </span>
+          <span class="font-display text-[17px] font-bold tracking-tight">Sound<span class="grad-text">Wave</span></span>
+        </button>
+        <div class="flex items-center gap-2.5">
+          <button id="hdrSearch" class="grid size-9 place-items-center rounded-xl border border-white/15 bg-white/5 backdrop-blur-xl transition active:scale-90 hover:bg-white/10" aria-label="Search">
+            <i data-lucide="search" class="size-[17px] text-white/80"></i>
+          </button>
+          <button data-tab="profile" class="relative active:scale-90 transition-transform" aria-label="Profile">
+            <span class="absolute -inset-[3px] rounded-full bg-gradient-to-tr from-fuchsia-500 to-cyan-400 opacity-80 blur-[5px]"></span>
+            <img src="https://i.pravatar.cc/80?img=12" alt="Alex" class="relative size-9 rounded-full border border-white/40 object-cover" />
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="px-5 pb-[190px] pt-6">
+
+      <!-- ================= HOME ================= -->
+      <section id="view-home" class="view">
+        <p id="greeting" class="text-[13px] font-medium uppercase tracking-[0.28em] text-white/45">Good evening</p>
+        <h1 class="font-display mt-1.5 text-[32px] font-bold leading-[1.08] tracking-tight">
+          Feel the <span class="grad-text text-glow">liquid</span><br />rhythm tonight
+        </h1>
+
+        <!-- Featured banner -->
+        <div id="featured" class="glass spec-line group relative mt-6 overflow-hidden p-5" style="transform-style:preserve-3d">
+          <div class="pointer-events-none absolute -right-10 -top-14 size-52 rounded-full bg-fuchsia-500/40 blur-3xl transition duration-700 group-hover:bg-fuchsia-400/50"></div>
+          <div class="pointer-events-none absolute -bottom-16 left-0 size-48 rounded-full bg-cyan-400/25 blur-3xl"></div>
+          <div class="relative z-10 flex items-center gap-2">
+            <span class="flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-white/85">
+              <i data-lucide="flame" class="size-3.5 text-orange-300"></i> Trending Playlist
+            </span>
+          </div>
+          <div class="relative z-10 mt-4 flex items-end justify-between gap-4">
+            <div class="min-w-0">
+              <h2 class="font-display text-[30px] font-bold leading-tight">Good Vibes<br />Only</h2>
+              <p class="mt-2 text-[13px] text-white/55">38 tracks · Curated for your night drive energy</p>
+              <button id="featuredPlay" class="mt-4 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-600 via-fuchsia-500 to-pink-500 px-6 py-3 text-[14px] font-bold shadow-[0_8px_28px_rgba(217,70,239,.55),inset_0_1px_0_rgba(255,255,255,.4)] transition active:scale-95 hover:brightness-110">
+                <i data-lucide="play" class="size-4 fill-white"></i> Play Now
+              </button>
+            </div>
+            <div class="relative shrink-0" style="transform:translateZ(40px)">
+              <div class="absolute -inset-2 rounded-[22px] bg-gradient-to-tr from-fuchsia-500/60 to-cyan-400/50 blur-xl opacity-80"></div>
+              <img src="https://images.pexels.com/photos/40614690/pexels-photo-40614690.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=420&w=420" alt="Good Vibes Only" class="relative size-[104px] rounded-[20px] border border-white/30 object-cover shadow-2xl" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Recently played -->
+        <div class="mt-8 flex items-center justify-between">
+          <h3 class="font-display text-lg font-bold">Recently Played</h3>
+          <button class="flex items-center gap-1 text-[12px] font-semibold text-white/45 transition hover:text-white/80" data-tab="library">See all <i data-lucide="arrow-right" class="size-3.5"></i></button>
+        </div>
+        <div id="recentRow" class="scroll-none -mx-5 mt-4 flex snap-x snap-mandatory gap-3.5 overflow-x-auto px-5 pb-2"></div>
+
+        <!-- Recommended -->
+        <div class="mt-7 flex items-center justify-between">
+          <h3 class="font-display text-lg font-bold">Recommended for You</h3>
+          <span class="flex items-center gap-1 text-[11px] font-medium uppercase tracking-widest text-white/35"><i data-lucide="sparkles" class="size-3.5 text-fuchsia-300"></i> AI mix</span>
+        </div>
+        <div id="recoList" class="glass-soft mt-4 space-y-0.5 p-2"></div>
+      </section>
+
+      <!-- ================= EXPLORE ================= -->
+      <section id="view-explore" class="view hidden">
+        <h1 class="font-display text-[32px] font-bold tracking-tight">Explore <span class="grad-text">Sounds</span></h1>
+        <div class="glass-soft mt-5 flex items-center gap-3 rounded-2xl px-4 py-3.5">
+          <i data-lucide="search" class="size-[18px] shrink-0 text-white/50"></i>
+          <input id="searchInput" type="text" placeholder="Artists, tracks, moods..." autocomplete="off"
+            class="w-full bg-transparent text-[15px] font-medium text-white outline-none placeholder:text-white/35" />
+          <button id="searchClear" class="hidden active:scale-90 transition" aria-label="Clear search"><i data-lucide="x" class="size-4 text-white/50"></i></button>
+        </div>
+        <div id="chipRow" class="scroll-none -mx-5 mt-4 flex gap-2 overflow-x-auto px-5 pb-1"></div>
+        <p id="exploreCount" class="mt-5 text-[12px] font-semibold uppercase tracking-[0.22em] text-white/40"></p>
+        <div id="exploreGrid" class="mt-3 grid grid-cols-2 gap-3"></div>
+      </section>
+
+      <!-- ================= LIBRARY ================= -->
+      <section id="view-library" class="view hidden">
+        <h1 class="font-display text-[32px] font-bold tracking-tight">Your <span class="grad-text">Library</span></h1>
+        <div id="playlistGrid" class="mt-5 grid grid-cols-2 gap-3"></div>
+
+        <!-- Local files -->
+        <div class="mt-8 flex items-center justify-between">
+          <h3 class="font-display flex items-center gap-2 text-lg font-bold"><i data-lucide="hard-drive" class="size-[18px] text-cyan-300"></i> On This Device</h3>
+          <span id="localCount" class="rounded-full border border-cyan-300/30 bg-cyan-400/10 px-2.5 py-0.5 text-[11px] font-bold text-cyan-200">0</span>
+        </div>
+        <button id="addLocalBtn" class="glass-soft group mt-4 flex w-full items-center gap-4 rounded-[22px] border-dashed p-4 text-left transition hover:bg-white/[0.08] active:scale-[0.98]">
+          <span class="grid size-12 shrink-0 place-items-center rounded-2xl border border-white/20 bg-gradient-to-br from-cyan-500/30 to-violet-500/30"><i data-lucide="upload" class="size-5 text-cyan-200"></i></span>
+          <span class="min-w-0">
+            <span class="block text-[15px] font-bold">Add from device</span>
+            <span class="block truncate text-[12px] text-white/45">Pick MP3, WAV, M4A or OGG from your storage</span>
+          </span>
+          <i data-lucide="plus" class="ml-auto size-5 shrink-0 text-white/40 transition group-hover:text-white/80"></i>
+        </button>
+        <input type="file" id="filePicker" accept="audio/*" multiple class="hidden" />
+        <div id="localList" class="glass-soft mt-3 hidden space-y-0.5 p-2"></div>
+
+        <!-- Online streams -->
+        <div class="mt-8 flex items-center justify-between">
+          <h3 class="font-display flex items-center gap-2 text-lg font-bold"><i data-lucide="radio-tower" class="size-[18px] text-fuchsia-300"></i> Online Streams</h3>
+          <span class="text-[11px] font-medium uppercase tracking-widest text-white/35">Web · URL</span>
+        </div>
+        <div class="glass-soft mt-4 rounded-[22px] p-2.5">
+          <div class="flex items-center gap-2.5 rounded-2xl border border-white/10 bg-white/5 px-3.5 py-3">
+            <i data-lucide="link" class="size-[17px] shrink-0 text-white/45"></i>
+            <input id="streamInput" type="url" inputmode="url" placeholder="Paste an audio stream URL (mp3 / aac)…" autocomplete="off"
+              class="w-full min-w-0 bg-transparent text-[14px] font-medium text-white outline-none placeholder:text-white/35" />
+            <button id="addStreamBtn" class="grid size-9 shrink-0 place-items-center rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 shadow-[0_4px_16px_rgba(217,70,239,.5)] transition active:scale-90" aria-label="Add stream">
+              <i data-lucide="plus" class="size-[18px]"></i>
+            </button>
+          </div>
+          <div id="streamList"></div>
+        </div>
+
+        <!-- YouTube API placeholder -->
+        <div class="glass-soft mt-3 overflow-hidden rounded-[22px]">
+          <div class="flex items-center gap-4 p-4">
+            <span class="grid size-12 shrink-0 place-items-center rounded-2xl border border-white/20 bg-gradient-to-br from-red-500/30 to-rose-500/30"><i data-lucide="youtube" class="size-6 text-red-300"></i></span>
+            <div class="min-w-0 flex-1">
+              <p class="text-[15px] font-bold leading-tight">YouTube Music <span class="ml-1 rounded-full bg-white/10 px-2 py-0.5 align-middle text-[9px] font-bold uppercase tracking-widest text-white/55">API placeholder</span></p>
+              <p class="mt-0.5 truncate text-[12px] text-white/45">Add a Data API key to unlock web search & playback</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2.5 border-t border-white/10 px-4 py-3">
+            <i data-lucide="key-round" class="size-4 shrink-0 text-white/40"></i>
+            <input id="ytKey" type="password" placeholder="AIza… API key" autocomplete="off"
+              class="w-full min-w-0 bg-transparent text-[13px] font-medium tracking-wide text-white/80 outline-none placeholder:text-white/30" />
+            <button id="ytSave" class="shrink-0 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-[12px] font-bold transition hover:bg-white/15 active:scale-95">Save</button>
+          </div>
+        </div>
+
+        <div class="mt-8 flex items-center justify-between">
+          <h3 class="font-display text-lg font-bold">Liked Songs</h3>
+          <span id="likedCount" class="rounded-full border border-fuchsia-300/30 bg-fuchsia-400/10 px-2.5 py-0.5 text-[11px] font-bold text-fuchsia-200">0</span>
+        </div>
+        <div id="likedList" class="glass-soft mt-4 space-y-0.5 p-2"></div>
+      </section>
+
+      <!-- ================= PROFILE ================= -->
+      <section id="view-profile" class="view hidden">
+        <h1 class="font-display text-[32px] font-bold tracking-tight">Profile</h1>
+        <div class="glass spec-line mt-5 flex items-center gap-4 p-5">
+          <div class="relative shrink-0">
+            <span class="absolute -inset-1 rounded-full bg-gradient-to-tr from-fuchsia-500 to-cyan-400 opacity-80 blur-md"></span>
+            <img src="https://i.pravatar.cc/120?img=12" alt="Alex Rivera" class="relative size-16 rounded-full border-2 border-white/40 object-cover" />
+          </div>
+          <div class="min-w-0">
+            <p class="font-display truncate text-xl font-bold">Alex Rivera</p>
+            <p class="truncate text-[13px] text-white/50">SoundWave Premium · Since 2023</p>
+            <span class="mt-1.5 inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest"><i data-lucide="zap" class="size-3"></i> Pro listener</span>
+          </div>
+        </div>
+        <div class="mt-4 grid grid-cols-3 gap-3">
+          <div class="glass-soft rounded-3xl p-4 text-center">
+            <p class="font-display text-2xl font-bold grad-text" id="statMinutes">0</p>
+            <p class="mt-1 text-[11px] font-medium uppercase tracking-wider text-white/45">Minutes</p>
+          </div>
+          <div class="glass-soft rounded-3xl p-4 text-center">
+            <p class="font-display text-2xl font-bold grad-text" id="statLiked">0</p>
+            <p class="mt-1 text-[11px] font-medium uppercase tracking-wider text-white/45">Liked</p>
+          </div>
+          <div class="glass-soft rounded-3xl p-4 text-center">
+            <p class="font-display text-2xl font-bold grad-text">12</p>
+            <p class="mt-1 text-[11px] font-medium uppercase tracking-wider text-white/45">Playlists</p>
+          </div>
+        </div>
+        <div class="glass-soft mt-4 divide-y divide-white/8 rounded-3xl">
+          <button class="flex w-full items-center gap-3.5 px-5 py-4 text-[15px] font-medium text-white/80 transition hover:bg-white/5 rounded-t-3xl" data-toast="Opening settings…">
+            <span class="grid size-9 place-items-center rounded-xl bg-violet-500/20 border border-violet-300/20"><i data-lucide="settings" class="size-[17px] text-violet-300"></i></span> Settings
+            <i data-lucide="chevron-right" class="ml-auto size-4 text-white/30"></i>
+          </button>
+          <button class="flex w-full items-center gap-3.5 px-5 py-4 text-[15px] font-medium text-white/80 transition hover:bg-white/5" data-toast="Notifications coming up…">
+            <span class="grid size-9 place-items-center rounded-xl bg-cyan-500/20 border border-cyan-300/20"><i data-lucide="bell" class="size-[17px] text-cyan-300"></i></span> Notifications
+            <i data-lucide="chevron-right" class="ml-auto size-4 text-white/30"></i>
+          </button>
+          <button class="flex w-full items-center gap-3.5 px-5 py-4 text-[15px] font-medium text-white/80 transition hover:bg-white/5" data-toast="No downloads yet">
+            <span class="grid size-9 place-items-center rounded-xl bg-fuchsia-500/20 border border-fuchsia-300/20"><i data-lucide="download" class="size-[17px] text-fuchsia-300"></i></span> Downloads
+            <i data-lucide="chevron-right" class="ml-auto size-4 text-white/30"></i>
+          </button>
+          <button class="flex w-full items-center gap-3.5 px-5 py-4 text-[15px] font-medium text-white/80 transition hover:bg-white/5 rounded-b-3xl" data-toast="Streaming in lossless quality">
+            <span class="grid size-9 place-items-center rounded-xl bg-pink-500/20 border border-pink-300/20"><i data-lucide="headphones" class="size-[17px] text-pink-300"></i></span> Audio Quality
+            <i data-lucide="chevron-right" class="ml-auto size-4 text-white/30"></i>
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <!-- ======== Mini player ======== -->
+    <div class="pointer-events-none fixed inset-x-0 bottom-[86px] z-40 mx-auto w-full max-w-[430px] px-4 lg:max-w-[460px]">
+      <div id="mini" data-open-player class="glass spec-line pointer-events-auto relative cursor-pointer overflow-hidden rounded-[20px] p-2.5 pr-3 active:scale-[0.98] transition-transform" role="button" aria-label="Open player">
+        <div class="flex items-center gap-3">
+          <img id="miniArt" src="" alt="" class="size-11 rounded-xl border border-white/25 object-cover" />
+          <div class="min-w-0 flex-1">
+            <p id="miniTitle" class="truncate text-[14px] font-bold"></p>
+            <p id="miniArtist" class="truncate text-[12px] text-white/50"></p>
+          </div>
+          <div class="eq mr-1" id="miniEq" data-eq-global><span></span><span></span><span></span><span></span></div>
+          <button id="miniPlay" class="grid size-10 shrink-0 place-items-center rounded-full bg-white/10 border border-white/20 backdrop-blur-xl transition active:scale-90 hover:bg-white/15" aria-label="Play or pause">
+            <i data-lucide="play" class="ic-play size-[18px] fill-white"></i>
+            <i data-lucide="pause" class="ic-pause size-[18px] fill-white hidden"></i>
+          </button>
+        </div>
+        <div class="absolute inset-x-0 bottom-0 h-[2.5px] bg-white/10">
+          <div id="miniFill" class="h-full bg-gradient-to-r from-violet-400 via-fuchsia-400 to-cyan-300 shadow-[0_0_10px_rgba(217,70,239,.8)]" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======== Bottom glass nav ======== -->
+    <nav class="fixed inset-x-0 bottom-0 z-40 mx-auto w-full max-w-[430px] px-4 pb-[calc(env(safe-area-inset-bottom,0px)+14px)] lg:max-w-[460px]">
+      <div class="glass spec-line no-select flex items-center justify-between rounded-[26px] px-3 py-2.5">
+        <button class="nav-item nav-active group relative flex flex-1 flex-col items-center gap-1 py-1.5 transition active:scale-90" data-tab="home" aria-label="Home">
+          <i data-lucide="house" class="nav-ic size-[22px] text-white/45 transition-all duration-300"></i>
+          <span class="nav-dot size-1 scale-0 rounded-full bg-fuchsia-300 opacity-0 shadow-[0_0_8px_rgba(240,171,252,.9)] transition-all duration-300"></span>
+        </button>
+        <button class="nav-item group relative flex flex-1 flex-col items-center gap-1 py-1.5 transition active:scale-90" data-tab="explore" aria-label="Explore">
+          <i data-lucide="compass" class="nav-ic size-[22px] text-white/45 transition-all duration-300"></i>
+          <span class="nav-dot size-1 scale-0 rounded-full bg-fuchsia-300 opacity-0 shadow-[0_0_8px_rgba(240,171,252,.9)] transition-all duration-300"></span>
+        </button>
+        <button class="nav-item group relative flex flex-1 flex-col items-center gap-1 py-1.5 transition active:scale-90" data-tab="library" aria-label="Library">
+          <i data-lucide="library" class="nav-ic size-[22px] text-white/45 transition-all duration-300"></i>
+          <span class="nav-dot size-1 scale-0 rounded-full bg-fuchsia-300 opacity-0 shadow-[0_0_8px_rgba(240,171,252,.9)] transition-all duration-300"></span>
+        </button>
+        <button class="nav-item group relative flex flex-1 flex-col items-center gap-1 py-1.5 transition active:scale-90" data-tab="profile" aria-label="Profile">
+          <i data-lucide="user-round" class="nav-ic size-[22px] text-white/45 transition-all duration-300"></i>
+          <span class="nav-dot size-1 scale-0 rounded-full bg-fuchsia-300 opacity-0 shadow-[0_0_8px_rgba(240,171,252,.9)] transition-all duration-300"></span>
+        </button>
+      </div>
+    </nav>
+  </div>
+
+  <!-- ======== Toast ======== -->
+  <div id="toast" class="glass fixed bottom-[168px] left-1/2 z-[70] flex items-center gap-2.5 whitespace-nowrap rounded-full px-5 py-3 text-[13px] font-semibold shadow-2xl">
+    <i data-lucide="sparkles" class="size-4 text-fuchsia-300"></i><span id="toastMsg">Hello</span>
+  </div>
+
+  <!-- ======== Now Playing overlay ======== -->
+  <div id="playerOverlay" class="fixed inset-0 z-50">
+    <div class="absolute inset-0 bg-black/55 backdrop-blur-md" data-close-player></div>
+    <div id="sheet" class="glass spec-line absolute inset-x-0 bottom-0 mx-auto flex h-full max-h-full w-full max-w-[430px] flex-col overflow-hidden rounded-t-[36px] lg:max-w-[460px]" style="border-radius:36px 36px 0 0">
+
+      <!-- ambient art glow -->
+      <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+        <img id="sheetGlow" src="" alt="" class="glow-art absolute inset-x-0 top-[6%] mx-auto w-[78%] rounded-[40px]" />
+        <div class="absolute inset-0 bg-gradient-to-b from-[#0a021c]/30 via-[#0a021c]/72 to-[#0a021c]/92"></div>
+      </div>
+
+      <!-- handle + header -->
+      <div id="dragZone" class="relative z-10 shrink-0 cursor-grab touch-none px-6 pt-3 active:cursor-grabbing">
+        <div class="mx-auto h-1.5 w-14 rounded-full bg-white/25"></div>
+        <div class="mt-4 flex items-center justify-between">
+          <button id="closePlayer" class="grid size-10 place-items-center rounded-full border border-white/15 bg-white/5 backdrop-blur-xl transition active:scale-90 hover:bg-white/12" aria-label="Close player">
+            <i data-lucide="chevron-down" class="size-5 text-white/85"></i>
+          </button>
+          <p class="text-[11px] font-bold uppercase tracking-[0.32em] text-white/50">Now Playing</p>
+          <button class="grid size-10 place-items-center rounded-full border border-white/15 bg-white/5 backdrop-blur-xl transition active:scale-90 hover:bg-white/12" data-toast="Queue &amp; options" aria-label="Options">
+            <i data-lucide="ellipsis" class="size-5 text-white/85"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- album art -->
+      <div class="relative z-10 mt-2 flex-1 min-h-0 px-8">
+        <div class="float-art relative mx-auto aspect-square w-full max-w-[340px]">
+          <div class="absolute -inset-4 rounded-[36px] bg-gradient-to-tr from-violet-600/40 via-fuchsia-500/40 to-cyan-400/40 blur-2xl"></div>
+          <img id="modalArt" src="" alt="Album art" class="relative h-full w-full rounded-[30px] border border-white/25 object-cover shadow-[0_30px_60px_rgba(0,0,0,.6),inset_0_1px_0_rgba(255,255,255,.3)]" />
+          <!-- visualizer strip -->
+          <div class="viz absolute -bottom-3 left-1/2 flex h-8 -translate-x-1/2 items-end gap-1.5">
+            <span style="animation-delay:0s"></span><span style="animation-delay:.32s"></span><span style="animation-delay:.12s"></span><span style="animation-delay:.5s"></span><span style="animation-delay:.24s"></span><span style="animation-delay:.62s"></span><span style="animation-delay:.38s"></span><span style="animation-delay:.08s"></span><span style="animation-delay:.45s"></span><span style="animation-delay:.2s"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- meta + controls -->
+      <div class="relative z-10 shrink-0 px-7 pb-[calc(env(safe-area-inset-bottom,0px)+26px)] pt-5">
+        <div class="flex items-start justify-between gap-4">
+          <div class="min-w-0">
+            <h2 id="modalTitle" class="font-display truncate text-[24px] font-bold leading-tight">—</h2>
+            <p id="modalArtist" class="mt-0.5 truncate text-[15px] text-white/55">—</p>
+          </div>
+          <button id="modalLike" class="like-target mt-1 grid size-11 shrink-0 place-items-center rounded-full border border-white/15 bg-white/5 backdrop-blur-xl transition active:scale-90 hover:bg-white/12" aria-label="Like song">
+            <i data-lucide="heart" class="size-5 text-white/70"></i>
+          </button>
+        </div>
+
+        <!-- interactive timeline -->
+        <div class="group mt-4">
+          <div id="seekBar" class="relative h-5 cursor-pointer touch-none" role="slider" aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div class="absolute inset-x-0 top-1/2 h-[5px] -translate-y-1/2 rounded-full bg-white/12">
+              <div id="seekFill" class="relative h-full rounded-full bg-gradient-to-r from-violet-400 via-fuchsia-400 to-cyan-300 shadow-[0_0_14px_rgba(217,70,239,.7)]" style="width:0%">
+                <div id="seekKnob" class="absolute right-0 top-1/2 size-4 -translate-y-1/2 translate-x-1/2 rounded-full bg-white opacity-0 shadow-[0_0_12px_rgba(255,255,255,.9)] transition-opacity group-hover:opacity-100 group-active:scale-110"></div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-1 flex justify-between text-[12px] font-medium tabular-nums text-white/45">
+            <span id="timeCur">0:00</span><span id="timeTotal">0:00</span>
+          </div>
+        </div>
+
+        <!-- main controls -->
+        <div class="mt-3 flex items-center justify-between">
+          <button id="btnShuffle" class="grid size-11 place-items-center rounded-full text-white/40 transition active:scale-90 hover:text-white/80" aria-label="Shuffle">
+            <i data-lucide="shuffle" class="size-5"></i>
+          </button>
+          <button id="btnPrev" class="grid size-12 place-items-center rounded-full text-white/85 transition active:scale-90 hover:text-white" aria-label="Previous">
+            <i data-lucide="skip-back" class="size-6 fill-current"></i>
+          </button>
+          <button id="btnPlayModal" class="liquid-ring grid size-[68px] place-items-center rounded-full bg-gradient-to-br from-violet-500 via-fuchsia-500 to-pink-500 text-white shadow-[inset_0_2px_2px_rgba(255,255,255,.5),0_10px_35px_rgba(217,70,239,.5)] transition active:scale-[0.92]" aria-label="Play or pause">
+            <i data-lucide="play" class="ic-play size-7 translate-x-[2px] fill-white"></i>
+            <i data-lucide="pause" class="ic-pause size-7 fill-white hidden"></i>
+          </button>
+          <button id="btnNext" class="grid size-12 place-items-center rounded-full text-white/85 transition active:scale-90 hover:text-white" aria-label="Next">
+            <i data-lucide="skip-forward" class="size-6 fill-current"></i>
+          </button>
+          <button id="btnRepeat" class="relative grid size-11 place-items-center rounded-full text-white/40 transition active:scale-90 hover:text-white/80" aria-label="Repeat">
+            <i data-lucide="repeat" class="ic-repeat size-5"></i>
+            <i data-lucide="repeat-1" class="ic-repeat-one size-5 hidden"></i>
+          </button>
+        </div>
+
+        <!-- volume -->
+        <div class="mt-4 flex items-center gap-3">
+          <button id="muteBtn" class="text-white/50 transition active:scale-90 hover:text-white/85" aria-label="Mute">
+            <i data-lucide="volume-2" class="ic-vol size-5"></i>
+            <i data-lucide="volume-x" class="ic-mute size-5 hidden"></i>
+          </button>
+          <input id="volSlider" type="range" min="0" max="100" value="80" class="flex-1" aria-label="Volume" />
+          <span class="w-8 text-right text-[11px] font-semibold tabular-nums text-white/40" id="volLabel">80</span>
+        </div>
+
+        <!-- up next -->
+        <div class="mt-4 flex items-center gap-3 rounded-2xl border border-white/12 bg-white/5 p-2.5 backdrop-blur-xl">
+          <span class="pl-1 text-[10px] font-bold uppercase tracking-[0.22em] text-white/40">Up<br />next</span>
+          <img id="nextArt" src="" alt="" class="size-9 rounded-lg border border-white/20 object-cover" />
+          <div class="min-w-0 flex-1">
+            <p id="nextTitle" class="truncate text-[13px] font-semibold text-white/80">—</p>
+            <p id="nextArtist" class="truncate text-[11px] text-white/40">—</p>
+          </div>
+          <button id="playNext" class="grid size-9 place-items-center rounded-full border border-white/15 bg-white/5 transition active:scale-90 hover:bg-white/12" aria-label="Play next track">
+            <i data-lucide="play" class="size-4 fill-white"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <audio id="audio" preload="metadata"></audio>
+
+<script>
+/* ============================================================
+   SoundWave — Liquid Glass Music Player
+============================================================ */
+const $  = (s, o = document) => o.querySelector(s);
+const $$ = (s, o = document) => [...o.querySelectorAll(s)];
+const audio = $('#audio');
+
+/* ---------- Data ---------- */
+const P = 'https://images.pexels.com/photos/';
+const Q = '?auto=compress&cs=tinysrgb&dpr=2&h=480&w=480';
+const TRACKS = [
+  { id:'t1',  title:'Neon Horizon',    artist:'Luna Wave',          genre:'Synthwave', dur:'3:42', src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',  cover:P+'30124278/pexels-photo-30124278.jpeg'+Q },
+  { id:'t2',  title:'Midnight Pulse',  artist:'Kyra Skye',          genre:'Electronic', dur:'4:05', src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',  cover:P+'17225445/pexels-photo-17225445.jpeg'+Q },
+  { id:'t3',  title:'Electric Dreams', artist:'Neon District',      genre:'Synthwave', dur:'3:18', src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',  cover:P+'1763076/pexels-photo-1763076.jpeg'+Q },
+  { id:'t4',  title:'Velvet Skies',    artist:'Aurora Bliss',       genre:'Chill',     dur:'4:44', src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',  cover:P+'29523847/pexels-photo-29523847.jpeg'+Q },
+  { id:'t5',  title:'Glass City',      artist:'Midnight Arcade',    genre:'Electronic', dur:'3:57', src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3',  cover:P+'36098639/pexels-photo-36098639.jpeg'+Q },
+  { id:'t6',  title:'Afterglow',       artist:'Violet Nova',        genre:'Pop',       dur:'3:29', src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3',  cover:P+'8512644/pexels-photo-8512644.jpeg'+Q },
+  { id:'t7',  title:'Slow Motion',     artist:'Dreamfield',         genre:'Lo-Fi',     dur:'5:02', src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3',  cover:P+'34001135/pexels-photo-34001135.jpeg'+Q },
+  { id:'t8',  title:'Starlight Drive', artist:'Cosmic Run',         genre:'Synthwave', dur:'4:21', src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3',  cover:P+'29776736/pexels-photo-29776736.jpeg'+Q },
+  { id:'t9',  title:'Liquid Gold',     artist:'Irie Sol',           genre:'Chill',     dur:'3:36', src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3',  cover:P+'27501674/pexels-photo-27501674.jpeg'+Q },
+  { id:'t10', title:'Nightcall',       artist:'Shadow Frequencies', genre:'Electronic', dur:'4:10', src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3', cover:P+'39004713/pexels-photo-39004713.jpeg'+Q },
+];
+const PLAYLISTS = [
+  { name:'Midnight Drive', count:42, grad:'from-violet-600 via-purple-500 to-fuchsia-500', icon:'moon-star', tracks:['t3','t8','t1'] },
+  { name:'Focus Flow',     count:28, grad:'from-cyan-500 via-sky-500 to-blue-600',         icon:'waves',     tracks:['t7','t4','t2'] },
+  { name:'Neon Nights',    count:61, grad:'from-fuchsia-500 via-pink-500 to-rose-500',     icon:'zap',       tracks:['t9','t5','t10'] },
+  { name:'Morning Glow',   count:35, grad:'from-amber-400 via-orange-400 to-pink-500',     icon:'sunrise',   tracks:['t6','t4','t7'] },
+];
+const RECENT = ['t4','t7','t2','t9'];
+const RECO   = ['t1','t3','t4','t5','t6','t8'];
+const GENRES = ['All','Synthwave','Electronic','Chill','Pop','Lo-Fi'];
+
+const state = {
+  idx: 0, playing: false, loaded: false,
+  repeat: 'off',           // off -> all -> one
+  shuffle: false,
+  liked: new Set(['t2','t6']),
+  query: '', genre: 'All',
+  view: 'home',
+};
+const byId   = id => TRACKS.find(t => t.id === id);
+const fmt    = s => { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+
+/* ---------- Local files & online streams registry ---------- */
+const localIds = [], streamIds = [];
+const localURL = new Map();      // track id -> object URL (session only)
+let uid = 0;
+
+const hashStr = s => { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) | 0; return Math.abs(h); };
+
+// Neon gradient cover art generated for files/streams without artwork
+function coverFor(seed){
+  const hues = [[268,190],[305,195],[190,262],[330,215],[255,300],[210,275]];
+  const [a, b] = hues[hashStr(seed) % hues.length];
+  const x = 70 + hashStr(seed) % 300;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="480" height="480"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="hsl(${a},90%,58%)"/><stop offset="1" stop-color="hsl(${b},90%,48%)"/></linearGradient></defs><rect width="480" height="480" fill="#07021a"/><circle cx="${x}" cy="120" r="200" fill="url(#g)" opacity=".9"/><circle cx="390" cy="400" r="170" fill="hsl(${b},95%,62%)" opacity=".5"/><g fill="#ffffff" opacity=".92"><rect x="188" y="185" width="15" height="110" rx="7"/><rect x="232" y="150" width="15" height="145" rx="7"/><rect x="276" y="205" width="15" height="90" rx="7"/></g></svg>`;
+  return 'data:image/svg+xml,' + encodeURIComponent(svg);
+}
+const cleanName = n => (n || '').replace(/\.[a-z0-9]{2,5}$/i, '').replace(/[_\-]+/g, ' ').replace(/\s+/g, ' ').trim()
+  .replace(/\b\w/g, m => m.toUpperCase());
+const prettySize = b => b > 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB';
+function probeDuration(url, cb){
+  try {
+    const a = new Audio(); a.preload = 'metadata';
+    a.onloadedmetadata = () => { const d = a.duration; a.removeAttribute('src'); a.load(); cb(isFinite(d) ? d : 0); };
+    a.onerror = () => cb(0);
+    a.src = url;
+  } catch { cb(0); }
+}
+
+function addLocalFiles(files){
+  const arr = [...files].filter(f => f.type.startsWith('audio') || /\.(mp3|wav|ogg|oga|m4a|flac|aac|webm)$/i.test(f.name));
+  if (!arr.length) { toast('No audio files found in selection'); return; }
+  arr.forEach(f => {
+    const id = 'local-' + (++uid);
+    const url = URL.createObjectURL(f);
+    localURL.set(id, url);
+    const t = { id, title: cleanName(f.name) || 'Untitled track', artist: prettySize(f.size) + ' · Local file',
+      genre: 'Local', dur: '--:--', src: url, cover: coverFor(f.name), local: true };
+    TRACKS.push(t); localIds.push(id);
+    probeDuration(url, s => {
+      if (s) { t.sec = s; t.dur = fmt(s); $$(`[data-dur="${id}"]`).forEach(el => el.textContent = t.dur); }
+    });
+  });
+  toast(arr.length > 1 ? arr.length + ' tracks imported from device' : 'Track imported from device');
+  renderLocal();
+  updateChipsAndExplore();
+}
+
+function addStream(raw, { silent = false } = {}){
+  const url = (raw || '').trim();
+  if (!/^https?:\/\/.+/i.test(url)) { if (!silent) toast('Enter a valid http(s) stream URL'); return null; }
+  if (TRACKS.some(t => t.src === url && !t.hide)) { if (!silent) toast('Already in your streams'); return null; }
+  const host = (() => { try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return 'web stream'; } })();
+  let name = '';
+  try { name = cleanName(decodeURIComponent(url.split('/').pop().split('?')[0] || '')); } catch {}
+  const id = 'stream-' + (++uid);
+  const t = { id, title: name || 'Web Stream', artist: host + ' · Online', genre: 'Online',
+    dur: '--:--', src: url, cover: coverFor(url), remote: true };
+  TRACKS.push(t); streamIds.push(id);
+  saveStreams();
+  if (!silent) toast('Stream added — tap to play');
+  renderStreams();
+  updateChipsAndExplore();
+  return t;
+}
+
+function removeTrack(id){
+  const t = byId(id);
+  if (!t) return;
+  t.hide = true;
+  const li = localIds.indexOf(id);  if (li > -1) localIds.splice(li, 1);
+  const si = streamIds.indexOf(id); if (si > -1) streamIds.splice(si, 1);
+  if (localURL.has(id)) { URL.revokeObjectURL(localURL.get(id)); localURL.delete(id); }
+  state.liked.delete(id);
+  saveStreams();
+  toast('Removed from library');
+  if (TRACKS[state.idx] && TRACKS[state.idx].id === id) {
+    pause();
+    const v = TRACKS.find(x => !x.hide);
+    if (v) load(TRACKS.indexOf(v), false);
+  }
+  renderLocal(); renderStreams(); renderLiked();
+  updateChipsAndExplore();
+}
+
+function saveStreams(){
+  try { localStorage.setItem('sw_streams', JSON.stringify(streamIds.map(id => byId(id)).filter(Boolean).map(t => t.src))); } catch {}
+}
+function restoreStreams(){
+  try { (JSON.parse(localStorage.getItem('sw_streams') || '[]')).forEach(u => addStream(u, { silent: true })); } catch {}
+}
+
+function visibleGenres(){
+  const g = [...GENRES];
+  if (localIds.length)  g.push('Local');
+  if (streamIds.length) g.push('Online');
+  return g;
+}
+function updateChipsAndExplore(){
+  if (state.genre !== 'All' && !visibleGenres().includes(state.genre)) state.genre = 'All';
+  if (state.view === 'explore') { renderChips(); renderExplore(); }
+}
+
+/* ---------- Toast ---------- */
+let toastT;
+function toast(msg){
+  $('#toastMsg').innerHTML = msg;
+  $('#toast').classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => $('#toast').classList.remove('show'), 2100);
+}
+
+/* ---------- Templates ---------- */
+const eqHTML = '<div class="eq" data-eq><span></span><span></span><span></span><span></span></div>';
+
+function rowHTML(t, removable = false){
+  const liked = state.liked.has(t.id);
+  const badge = t.local  ? '<span class="mr-1 inline-flex items-center gap-1 rounded-md bg-cyan-400/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-cyan-300"><i data-lucide="smartphone" class="size-2.5"></i>Device</span>'
+              : t.remote ? '<span class="mr-1 inline-flex items-center gap-1 rounded-md bg-fuchsia-400/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-fuchsia-300"><i data-lucide="radio-tower" class="size-2.5"></i>Web</span>' : '';
+  return `
+  <div class="group flex w-full cursor-pointer items-center gap-3 rounded-2xl p-2 text-left transition hover:bg-white/[0.07] active:scale-[0.99]" data-play="${t.id}">
+    <div class="relative size-14 shrink-0 overflow-hidden rounded-xl border border-white/12">
+      <img src="${t.cover}" alt="${t.title}" loading="lazy" class="h-full w-full object-cover transition duration-500 group-hover:scale-110" />
+      <div class="absolute inset-0 grid place-items-center bg-black/45 backdrop-blur-[1px] opacity-0 transition eq-veil" data-veil="${t.id}">${eqHTML}</div>
+    </div>
+    <div class="min-w-0 flex-1">
+      <p class="truncate text-[15px] font-semibold text-white/90" data-title-for="${t.id}">${t.title}</p>
+      <p class="mt-0.5 flex items-center truncate text-[13px] text-white/45">${badge}${t.artist}</p>
+    </div>
+    <span class="shrink-0 text-[12px] font-medium tabular-nums text-white/35" data-dur="${t.id}">${t.dur}</span>
+    <button class="grid size-9 shrink-0 place-items-center rounded-full transition active:scale-75 hover:bg-white/10 ${liked ? 'liked' : ''}" data-like="${t.id}" aria-label="Like ${t.title}">
+      <i data-lucide="heart" class="size-[17px] text-white/55"></i>
+    </button>
+    ${removable ? `<button class="grid size-9 shrink-0 place-items-center rounded-full text-white/35 transition active:scale-75 hover:bg-red-400/10 hover:text-red-300" data-remove="${t.id}" aria-label="Remove ${t.title}">
+      <i data-lucide="trash-2" class="size-4"></i>
+    </button>` : ''}
+  </div>`;
+}
+
+function cardHTML(t, sub){
+  return `
+  <div class="glass-soft group relative cursor-pointer snap-start overflow-hidden rounded-[22px] p-2.5 transition active:scale-[0.97] hover:bg-white/[0.09]" data-play="${t.id}">
+    <div class="relative aspect-square overflow-hidden rounded-[15px]">
+      <img src="${t.cover}" alt="${t.title}" loading="lazy" class="h-full w-full object-cover transition duration-700 group-hover:scale-110" />
+      <div class="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent"></div>
+      <div class="absolute inset-0 grid place-items-center bg-black/35 opacity-0 backdrop-blur-[2px] transition duration-300 group-hover:opacity-100">
+        <span class="grid size-11 place-items-center rounded-full bg-white/15 border border-white/35 backdrop-blur-xl"><i data-lucide="play" class="size-5 fill-white"></i></span>
+      </div>
+      <div class="absolute bottom-2 left-2" data-eqwrap="${t.id}">${eqHTML}</div>
+    </div>
+    <p class="mt-2 truncate px-1 text-[14px] font-bold leading-tight">${t.title}</p>
+    <p class="truncate px-1 pb-1 text-[12px] text-white/45">${sub || t.artist}</p>
+  </div>`;
+}
+
+/* ---------- Renders ---------- */
+function renderHome(){
+  const subs = ['2h ago · Aurora Bliss','Yesterday · Dreamfield','3 days ago · Kyra Skye','Last week · Irie Sol'];
+  $('#recentRow').innerHTML = RECENT.map((id,i) => '<div class="w-[148px] shrink-0">' + cardHTML(byId(id), subs[i]) + '</div>').join('');
+  $('#recoList').innerHTML  = RECO.map(id => rowHTML(byId(id))).join('');
+}
+function renderChips(){
+  $('#chipRow').innerHTML = visibleGenres().map(g =>
+    `<button data-chip="${g}" class="shrink-0 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-[13px] font-semibold text-white/60 backdrop-blur-xl transition active:scale-95 hover:bg-white/10 ${state.genre === g ? 'chip-active' : ''}">${g}</button>`).join('');
+}
+function renderExplore(){
+  const q = state.query.trim().toLowerCase();
+  const list = TRACKS.filter(t =>
+    !t.hide &&
+    (state.genre === 'All' || t.genre === state.genre) &&
+    (!q || t.title.toLowerCase().includes(q) || t.artist.toLowerCase().includes(q) || t.genre.toLowerCase().includes(q)));
+  $('#exploreCount').textContent = list.length ? `${list.length} track${list.length > 1 ? 's' : ''}` : 'No results';
+  $('#exploreGrid').innerHTML = list.length
+    ? list.map(t => cardHTML(t)).join('')
+    : `<div class="glass-soft col-span-2 flex flex-col items-center gap-3 rounded-[22px] py-10 text-white/40">
+         <i data-lucide="music-2" class="size-8"></i><p class="text-sm font-medium">Nothing matches "${state.query}"</p></div>`;
+  lucide.createIcons();
+  updateTrackUI();
+}
+function renderLibrary(){
+  renderLocal();
+  renderStreams();
+  $('#playlistGrid').innerHTML = PLAYLISTS.map(p => `
+    <button class="group relative overflow-hidden rounded-[22px] border border-white/15 bg-gradient-to-br ${p.grad} p-4 text-left shadow-[0_10px_30px_rgba(0,0,0,.4),inset_0_1px_0_rgba(255,255,255,.35)] transition active:scale-[0.97] hover:brightness-110" data-playlist="${p.name}">
+      <div class="absolute -right-5 -top-6 size-24 rounded-full bg-white/20 blur-2xl"></div>
+      <span class="grid size-10 place-items-center rounded-xl bg-white/20 border border-white/30 backdrop-blur-md"><i data-lucide="${p.icon}" class="size-5 text-white"></i></span>
+      <p class="font-display mt-6 text-[16px] font-bold leading-tight drop-shadow">${p.name}</p>
+      <p class="text-[12px] font-medium text-white/75">${p.count} songs</p>
+    </button>`).join('');
+  renderLiked();
+  lucide.createIcons();
+}
+function renderLiked(){
+  const arr = [...state.liked].map(byId).filter(t => t && !t.hide);
+  $('#likedCount').textContent = arr.length;
+  $('#statLiked').textContent  = arr.length;
+  $('#likedList').innerHTML = arr.length
+    ? arr.map(rowHTML).join('')
+    : `<div class="flex flex-col items-center gap-2.5 py-9 text-white/40">
+         <i data-lucide="heart" class="size-8"></i>
+         <p class="text-sm font-medium">Tap the heart on any track<br/>and it lands here.</p></div>`;
+  lucide.createIcons();
+  updateTrackUI();
+}
+function renderLocal(){
+  const list = localIds.map(byId).filter(Boolean);
+  $('#localCount').textContent = list.length;
+  const box = $('#localList');
+  box.classList.toggle('hidden', !list.length);
+  box.innerHTML = list.map(t => rowHTML(t, true)).join('');
+  lucide.createIcons();
+  updateTrackUI();
+}
+function renderStreams(){
+  const list = streamIds.map(byId).filter(Boolean);
+  $('#streamList').innerHTML = list.length
+    ? '<div class="mt-1">' + list.map(t => rowHTML(t, true)).join('') + '</div>'
+    : `<div class="px-3 pb-3 pt-2.5 text-center">
+         <p class="text-[12.5px] font-medium text-white/35">No streams yet. Paste a direct audio URL above, or try a demo:</p>
+         <button data-preset="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-16.mp3"
+           class="mt-2.5 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-[12px] font-bold text-white/70 backdrop-blur-xl transition hover:bg-white/10 active:scale-95">
+           <i data-lucide="circle-play" class="size-4 text-fuchsia-300"></i> Add demo stream
+         </button></div>`;
+  lucide.createIcons();
+  updateTrackUI();
+}
+
+/* ---------- Player core ---------- */
+function load(idx, autoplay = true){
+  state.idx = idx;
+  const t = TRACKS[idx];
+  audio.src = t.src;
+  audio.load();
+  state.loaded = true;
+  resetSeek();
+  updateTrackUI();
+  if (autoplay) play();
+  $('#mini').classList.add('show');
+}
+function play(){
+  audio.play().then(() => {}).catch(() => toast('Tap again to start audio'));
+}
+function pause(){ audio.pause(); }
+function togglePlay(){ state.loaded ? (state.playing ? pause() : play()) : load(0); }
+
+function stepVisible(from, dir){
+  let j = from;
+  for (let k = 0; k < TRACKS.length; k++){
+    j = (j + dir + TRACKS.length) % TRACKS.length;
+    if (!TRACKS[j].hide) return j;
+  }
+  return from;
+}
+const visibleIdx = () => TRACKS.map((t, i) => t.hide ? -1 : i).filter(i => i > -1);
+function next(auto = false){
+  const vis = visibleIdx();
+  if (!vis.length) return;
+  let i;
+  if (state.shuffle) {
+    i = vis[Math.floor(Math.random() * vis.length)];
+    if (i === state.idx && vis.length > 1) i = vis[(vis.indexOf(i) + 1) % vis.length];
+  } else i = stepVisible(state.idx, 1);
+  load(i);
+}
+function prev(){
+  if (audio.currentTime > 3) { audio.currentTime = 0; return; }
+  load(stepVisible(state.idx, -1));
+}
+function playById(id){ load(TRACKS.findIndex(t => t.id === id)); }
+
+/* ---------- UI sync ---------- */
+function updateTrackUI(){
+  const t = TRACKS[state.idx];
+  // modal + mini
+  $('#modalArt').src = t.cover; $('#sheetGlow').src = t.cover;
+  $('#modalTitle').textContent = t.title; $('#modalArtist').textContent = t.artist;
+  $('#miniArt').src = t.cover; $('#miniTitle').textContent = t.title; $('#miniArtist').textContent = t.artist;
+  // up next
+  const n = TRACKS[(state.idx + 1) % TRACKS.length];
+  $('#nextArt').src = n.cover; $('#nextTitle').textContent = n.title; $('#nextArtist').textContent = n.artist;
+  // like state in modal
+  $('#modalLike').classList.toggle('liked', state.liked.has(t.id));
+  // eq indicators everywhere
+  $$('[data-veil]').forEach(v => {
+    const on = v.dataset.veil === t.id;
+    v.classList.toggle('opacity-0', !on);
+    v.querySelector('.eq').classList.toggle('on', on);
+  });
+  $$('[data-eqwrap]').forEach(w => w.querySelector('.eq').classList.toggle('on', w.dataset.eqwrap === t.id));
+  $('#miniEq').classList.toggle('on', state.loaded);
+  // highlight current titles
+  $$('[data-title-for]').forEach(el => el.classList.toggle('text-fuchsia-300', el.dataset.titleFor === t.id));
+}
+function updatePlayUI(){
+  document.body.classList.toggle('audio-playing', state.playing);
+  $$('.ic-play').forEach(i  => i.classList.toggle('hidden', state.playing));
+  $$('.ic-pause').forEach(i => i.classList.toggle('hidden', !state.playing));
+  updateTrackUI();
+}
+function resetSeek(){
+  $('#seekFill').style.width = '0%';
+  $('#miniFill').style.width = '0%';
+  $('#timeCur').textContent = '0:00';
+  $('#timeTotal').textContent = TRACKS[state.idx].dur;
+  $('#seekBar').setAttribute('aria-valuenow', 0);
+}
+
+/* ---------- Audio events ---------- */
+audio.addEventListener('play',  () => { state.playing = true;  updatePlayUI(); });
+audio.addEventListener('pause', () => { state.playing = false; updatePlayUI(); });
+audio.addEventListener('loadedmetadata', () => {
+  const t = TRACKS[state.idx];
+  if (isFinite(audio.duration)) {
+    t.sec = audio.duration;
+    t.dur = fmt(audio.duration);
+    $('#timeTotal').textContent = t.dur;
+    $$(`[data-dur="${t.id}"]`).forEach(el => el.textContent = t.dur);
+  } else { // live stream
+    t.dur = 'LIVE';
+    $('#timeTotal').textContent = 'LIVE';
+    $$(`[data-dur="${t.id}"]`).forEach(el => el.textContent = 'LIVE');
+  }
+});
+audio.addEventListener('timeupdate', () => {
+  if (audio.duration && !isFinite(audio.duration)) { $('#timeCur').textContent = fmt(audio.currentTime); return; }
+  if (!audio.duration || seeking) return;
+  const p = (audio.currentTime / audio.duration) * 100;
+  $('#seekFill').style.width = p + '%';
+  $('#miniFill').style.width = p + '%';
+  $('#timeCur').textContent = fmt(audio.currentTime);
+  $('#seekBar').setAttribute('aria-valuenow', Math.round(p));
+});
+audio.addEventListener('ended', () => {
+  if (state.repeat === 'one') { audio.currentTime = 0; play(); }
+  else if (state.repeat === 'off' && !state.shuffle && state.idx === TRACKS.length - 1) { pause(); audio.currentTime = 0; }
+  else next(true);
+});
+audio.addEventListener('error', () => toast('Stream unavailable — try another track'));
+
+/* ---------- Interactive seek (drag + tap) ---------- */
+const seekBar = $('#seekBar');
+let seeking = false;
+function seekTo(e){
+  const r = seekBar.getBoundingClientRect();
+  const p = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+  if (audio.duration && isFinite(audio.duration)) { audio.currentTime = p * audio.duration; }
+  else { toast('Seeking is not available on live streams'); return; }
+  $('#seekFill').style.width = p * 100 + '%';
+  $('#miniFill').style.width = p * 100 + '%';
+  $('#timeCur').textContent = fmt(p * (audio.duration || 0));
+}
+seekBar.addEventListener('pointerdown', e => { seeking = true; seekBar.setPointerCapture(e.pointerId); seekTo(e); });
+seekBar.addEventListener('pointermove', e => { if (seeking) seekTo(e); });
+seekBar.addEventListener('pointerup',   () => seeking = false);
+seekBar.addEventListener('pointercancel', () => seeking = false);
+
+/* ---------- Volume ---------- */
+const vol = $('#volSlider');
+function paintVol(){ vol.style.setProperty('--fill', vol.value + '%'); $('#volLabel').textContent = vol.value; }
+vol.addEventListener('input', () => {
+  audio.volume = vol.value / 100;
+  audio.muted = false;
+  syncVolIcon(); paintVol();
+});
+function syncVolIcon(){
+  const muted = audio.muted || vol.value == 0;
+  $('.ic-vol').classList.toggle('hidden', muted);
+  $('.ic-mute').classList.toggle('hidden', !muted);
+}
+$('#muteBtn').addEventListener('click', () => { audio.muted = !audio.muted; syncVolIcon(); });
+audio.volume = 0.8; paintVol();
+
+/* ---------- Controls ---------- */
+$('#btnPlayModal').addEventListener('click', togglePlay);
+$('#miniPlay').addEventListener('click', e => { e.stopPropagation(); togglePlay(); });
+$('#btnNext').addEventListener('click', () => next());
+$('#btnPrev').addEventListener('click', prev);
+$('#playNext').addEventListener('click', () => next());
+$('#featuredPlay').addEventListener('click', () => { if (!state.loaded) load(0); else play(); openPlayer(); });
+$('#btnShuffle').addEventListener('click', () => {
+  state.shuffle = !state.shuffle;
+  $('#btnShuffle').classList.toggle('text-fuchsia-300', state.shuffle);
+  $('#btnShuffle').classList.toggle('text-white/40', !state.shuffle);
+  $('#btnShuffle').style.filter = state.shuffle ? 'drop-shadow(0 0 8px rgba(240,171,252,.8))' : '';
+  toast('Shuffle ' + (state.shuffle ? 'on' : 'off'));
+});
+$('#btnRepeat').addEventListener('click', () => {
+  state.repeat = state.repeat === 'off' ? 'all' : state.repeat === 'all' ? 'one' : 'off';
+  const one = state.repeat === 'one', off = state.repeat === 'off';
+  $('#btnRepeat .ic-repeat').classList.toggle('hidden', one);
+  $('#btnRepeat .ic-repeat-one').classList.toggle('hidden', !one);
+  $('#btnRepeat').classList.toggle('text-fuchsia-300', !off);
+  $('#btnRepeat').classList.toggle('text-white/40', off);
+  $('#btnRepeat').style.filter = !off ? 'drop-shadow(0 0 8px rgba(240,171,252,.8))' : '';
+  toast('Repeat: ' + (off ? 'off' : one ? 'one track' : 'all'));
+});
+$('#modalLike').addEventListener('click', () => toggleLike(TRACKS[state.idx].id));
+
+function toggleLike(id){
+  const has = state.liked.has(id);
+  has ? state.liked.delete(id) : state.liked.add(id);
+  $$(`[data-like="${id}"]`).forEach(b => { b.classList.toggle('liked', !has); b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop'); });
+  if (!has) toast('Added to Liked Songs'); else toast('Removed from Liked Songs');
+  renderLiked();
+  if (TRACKS[state.idx].id === id) $('#modalLike').classList.toggle('liked', !has);
+  $('#statLiked').textContent = state.liked.size;
+}
+
+/* ---------- Global delegation (play / like / tabs / chips / toasts) ---------- */
+document.addEventListener('click', e => {
+  const like = e.target.closest('[data-like]');
+  if (like) { e.stopPropagation(); toggleLike(like.dataset.like); return; }
+
+  const rm = e.target.closest('[data-remove]');
+  if (rm) { e.stopPropagation(); removeTrack(rm.dataset.remove); return; }
+
+  const ps = e.target.closest('[data-preset]');
+  if (ps) { addStream(ps.dataset.preset); return; }
+
+  const pl = e.target.closest('[data-playlist]');
+  if (pl) {
+    const list = PLAYLISTS.find(p => p.name === pl.dataset.playlist);
+    playById(list.tracks[0]);
+    toast(`Playing “${list.name}”`);
+    openPlayer();
+    return;
+  }
+  const playEl = e.target.closest('[data-play]');
+  if (playEl) { playById(playEl.dataset.play); return; }
+
+  const chip = e.target.closest('[data-chip]');
+  if (chip) { state.genre = chip.dataset.chip; renderChips(); renderExplore(); return; }
+
+  const tab = e.target.closest('[data-tab]');
+  if (tab) { switchView(tab.dataset.tab); return; }
+
+  const t2 = e.target.closest('[data-toast]');
+  if (t2) { toast(t2.dataset.toast); return; }
+
+  if (e.target.closest('[data-open-player]')) { openPlayer(); return; }
+  if (e.target.closest('[data-close-player]')) { closePlayer(); return; }
+});
+
+/* ---------- Views ---------- */
+function switchView(name){
+  if (state.view === name && name !== 'explore') return;
+  state.view = name;
+  $$('.view').forEach(v => v.classList.add('hidden'));
+  const el = $('#view-' + name);
+  el.classList.remove('hidden');
+  el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
+  $$('.nav-item').forEach(n => n.classList.toggle('nav-active', n.dataset.tab === name));
+  if (name === 'explore') { renderChips(); renderExplore(); setTimeout(() => $('#searchInput').focus(), 350); }
+  if (name === 'library') renderLibrary();
+  if (name === 'profile') animateStats();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+$('#hdrSearch').addEventListener('click', () => switchView('explore'));
+
+/* ---------- Local files & stream controls ---------- */
+$('#addLocalBtn').addEventListener('click', () => $('#filePicker').click());
+$('#filePicker').addEventListener('change', e => {
+  if (e.target.files.length) addLocalFiles(e.target.files);
+  e.target.value = '';
+});
+const submitStream = () => { if (addStream($('#streamInput').value)) $('#streamInput').value = ''; };
+$('#addStreamBtn').addEventListener('click', submitStream);
+$('#streamInput').addEventListener('keydown', e => { if (e.key === 'Enter') submitStream(); });
+$('#ytSave').addEventListener('click', () => {
+  const v = $('#ytKey').value.trim();
+  if (!v) { toast('Paste a YouTube Data API key first'); return; }
+  try { localStorage.setItem('sw_yt_key', v); } catch {}
+  $('#ytKey').value = '';
+  toast('API key saved — YouTube search unlocks soon');
+});
+
+/* ---------- Explore search ---------- */
+$('#searchInput').addEventListener('input', e => {
+  state.query = e.target.value;
+  $('#searchClear').classList.toggle('hidden', !state.query);
+  renderExplore();
+});
+$('#searchClear').addEventListener('click', () => {
+  state.query = ''; $('#searchInput').value = '';
+  $('#searchClear').classList.add('hidden');
+  renderExplore(); $('#searchInput').focus();
+});
+
+/* ---------- Profile stat counter ---------- */
+function animateStats(){
+  const el = $('#statMinutes'), target = 1284, t0 = performance.now();
+  (function step(t){
+    const p = Math.min(1, (t - t0) / 900);
+    el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
+    if (p < 1) requestAnimationFrame(step);
+  })(t0);
+}
+
+/* ---------- Now Playing sheet ---------- */
+const overlay = $('#playerOverlay'), sheet = $('#sheet');
+function openPlayer(){ overlay.classList.add('open'); document.body.classList.add('lock'); }
+function closePlayer(){ overlay.classList.remove('open'); document.body.classList.remove('lock'); }
+$('#closePlayer').addEventListener('click', closePlayer);
+
+// swipe-down to dismiss
+let dragY = 0, dragging = false;
+const dz = $('#dragZone');
+dz.addEventListener('pointerdown', e => { dragging = true; dragY = e.clientY; dz.setPointerCapture(e.pointerId); sheet.style.transition = 'none'; });
+dz.addEventListener('pointermove', e => {
+  if (!dragging) return;
+  const dy = Math.max(0, e.clientY - dragY);
+  sheet.style.transform = `translateY(${dy}px)`;
+});
+function endDrag(e){
+  if (!dragging) return;
+  dragging = false;
+  sheet.style.transition = ''; sheet.style.transform = '';
+  if (e.clientY - dragY > 110) closePlayer();
+}
+dz.addEventListener('pointerup', endDrag);
+dz.addEventListener('pointercancel', endDrag);
+
+/* ---------- Featured card tilt (desktop) ---------- */
+if (matchMedia('(hover:hover)').matches){
+  const f = $('#featured');
+  f.addEventListener('pointermove', e => {
+    const r = f.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+    f.style.transform = `perspective(900px) rotateY(${x * 6}deg) rotateX(${-y * 6}deg)`;
+  });
+  f.addEventListener('pointerleave', () => f.style.transform = '');
+}
+
+/* ---------- Keyboard ---------- */
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
+  if (e.code === 'ArrowRight') next();
+  if (e.code === 'ArrowLeft') prev();
+});
+
+/* ---------- Greeting ---------- */
+(() => {
+  const h = new Date().getHours();
+  $('#greeting').textContent = h < 5 ? 'Late night session' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+})();
+
+/* ---------- Init ---------- */
+restoreStreams();
+renderHome();
+lucide.createIcons();
+updateTrackUI();
+updatePlayUI();
+</script>
+</body>
+</html>
